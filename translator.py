@@ -39,4 +39,4 @@ async def translate(ctx, target_lang: str, *, text: str):
     except Exception as e:
         await ctx.send(f"Failed to connect to LibreTranslate: {str(e)}")
 
-bot.run('MTU1MTYzNjg3ODQ3Njg0NTEwNw.Ga-pDh.JuwqN2LLtyoSJDGe0t5XWLTXVPLa9hEwgIn5t4')
+bot.run('Discord bot token')

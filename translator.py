@@ -2,20 +2,17 @@ import discord
 from discord.ext import commands
 import requests
 import json
-from typing import Any, Dict
-from urllib import request, parse
 from libretranslatepy import LibreTranslateAPI
 
-lt = LibreTranslateAPI("https://libretranslate.com/languages")
 
 
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-lt_irl = 'http://localhost:5000/translate'
+transl_url = 'http://localhost:5000/translate'
 
-la_url = 'http://localhost:5000/languages'
+lang_url = 'http://localhost:5000/languages'
 
 @bot.event
 async def on_ready():
@@ -35,7 +32,7 @@ async def translate(ctx, target_lang: str, *, text: str):
 
     try:
         # Make the HTTP POST request to LibreTranslate
-        response = requests.post(lt_irl, data=payload)
+        response = requests.post(transl_url, data=payload)
         response_data = response.json()
 
         if "translatedText" in response_data:
@@ -48,43 +45,30 @@ async def translate(ctx, target_lang: str, *, text: str):
         await ctx.send(f"Failed to connect to LibreTranslate: {str(e)}")
 
 @bot.command()
-async def languages(ctx, name, code):
-        """Retrieve list of supported languages.
+async def language(ctx, *, name: str):
+    try:
+        response = requests.get(lang_url)
+        language_data = response.json()
 
-        Returns:
-            A list of available languages ex: [{"code":"en", "name":"English"}]
-        """
+        if isinstance(language_data, list):
+            found_code = None
+            matched_name = ""
 
-        url = la_url
-        params = dict()
-        # if self.api_key is not None:
-        #     params["api_key"] = self.api_key
-        # url_params = parse.urlencode(params)
-        # req = request.Request(url, data=url_params.encode(), method="GET")
-        # response = request.urlopen(req)
-        # response_str = response.read().decode()
-        # return json.loads(response_str)
-        payload = {
-            "name": name,
-            "code": code
-        }
+            for lang in language_data:
+                if lang.get("name","").lower() == name.lower():
+                    matched_name = lang.get("name")
+                    found_code = lang.get("code")
+                    break
 
-        try:
-            # Make the HTTP POST request to LibreTranslate
-            languages = requests.get(lt, data=payload)
+            if found_code:
+                await ctx.send(f"**Name:** {matched_name}\n**Abbreviation Code:** `{found_code}`")
+            else:
+                await ctx.send(f"Language **{name}**, not found. The language selected does not exist in the current database / the selected langauge is misspelled")
+        else:
+            await ctx.send("Error: Received unexpected data format from the translation server.")
 
-        
-            # if "translatedText" in response_data:
-            # translated_text = response_data["translatedText"]
-            for code in languages.json():
-                ctx.send(f"Name: {name}   Abbreviation:{code}")
-            # else:
-            # await ctx.send(f"Translation error: {response_data.get('error', 'Unknown error')}")
-        
-        except Exception as e:
-            await ctx.send(f"Failed to connect to LibreTranslate: {str(e)}")
-
-        # await ctx.send(f"{lt.languages}{lt['name']},{lt['code']}")
+    except Exception as e:
+        await ctx.send(f"Failed to connect to LibreTranslate: {str(e)}")
         
 
-bot.run('Discord Token')
+bot.run('MTU1MTYzNjg3ODQ3Njg0NTEwNw.GI4AR_.0t9msgFTs4mSMmElnemjQHdTe8HV5Wx9MH9zxs')

@@ -71,4 +71,4 @@ async def language(ctx, *, name: str):
         await ctx.send(f"Failed to connect to LibreTranslate: {str(e)}")
         
 
-bot.run('MTU1MTYzNjg3ODQ3Njg0NTEwNw.GI4AR_.0t9msgFTs4mSMmElnemjQHdTe8HV5Wx9MH9zxs')
+bot.run('Enter Discord API Token')

@@ -1,8 +1,6 @@
 import discord
 from discord.ext import commands
 import requests
-import json
-from libretranslatepy import LibreTranslateAPI
 
 
 
@@ -17,6 +15,11 @@ lang_url = 'http://localhost:5000/languages'
 @bot.event
 async def on_ready():
     print(f'Translation bot is ready as {bot.user}')
+    try:
+        synced = await bot.tree.sync()
+        print(f"Synced {len(synced)} command(s)")
+    except Exception as e:
+        print(e)
 
 @bot.command()
 async def translate(ctx, target_lang: str, *, text: str):
@@ -69,6 +72,21 @@ async def language(ctx, *, name: str):
 
     except Exception as e:
         await ctx.send(f"Failed to connect to LibreTranslate: {str(e)}")
-        
 
-bot.run('Enter Discord API Token')
+class Instructions(discord.ui.Modal, title="Instruction for Translator Bot"):
+    instructions_display = discord.ui.TextInput(
+        label = "How to use this bot",
+        default = "To translate into another language, use: !translate {Code} {Inputed Text} \nTo find the code for the language, use: !language {Language Name}",
+        style = discord.TextStyle.paragraph,
+        required=False,
+        max_length=400
+    )
+        # You must include this method so the bot acknowledges when they close/submit the modal
+    async def on_submit(self, interaction: discord.Interaction):
+        await interaction.response.defer() 
+
+@bot.tree.command(name="instructions", description="Shows the instructions")
+async def instructions(interaction: discord.Interaction):
+    await interaction.response.send_modal(Instructions())
+
+bot.run('Enter Discord Bot API')

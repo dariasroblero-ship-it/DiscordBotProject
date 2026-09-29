@@ -25,13 +25,19 @@ async def on_ready():
 
 # Translates the input using "Code"
 @bot.command()
+
+# Defines an asynchronous function called language. Ctx is a context object 
+# that contains information of where the command was called. target_lang 
+# captures the word typed as a string, which represents the language code.
+# The * tells discord to collect all remaining words after target_lang into 
+# a single string variable 
 async def translate(ctx, target_lang: str, *, text: str):
 
     # Prepare data for LibreTranslate API
     payload = {
         "q": text, # Accepts a single string
         "source": "auto", # Auto detects the input
-        "target": target_lang, # Targets the output of other users
+        "target": target_lang, # Targets the language the user wants to use
         "format": "text", # Formatted in text
     }
 
@@ -69,7 +75,7 @@ async def language(ctx, *, name: str):
         # The API returns a list of languages
         if isinstance(language_data, list):
 
-            # Holds the language's "Code" and capitalizes if found
+            # Initializes the language's "Code" and sets the name to an empty string 
             found_code = None
             matched_name = ""
 
@@ -123,7 +129,7 @@ async def instructions(interaction: discord.Interaction):
     embed.add_field(name="\n**Command 4 - !createroom**", value="Create a room between 2 langauge using {code}.\n\n *Example:\n (!createroom English-To-Spanish en es) = Creates a room called **English-To-Spanish** with english and spanish only being tranlated*", inline=True)
 
     # Responds to the / command with the created Embed. It also makes the response 
-    # visible to user who ran the command only with "ephemeral=True"
+    # visible to only user who ran the command with "ephemeral=True"
     await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
@@ -131,7 +137,7 @@ async def instructions(interaction: discord.Interaction):
 # channel the bot can see
 @bot.event
 
-# Recieves the message object containing about message author, channel, and text content
+# Runs automatically whenever a message is posted in any channel the bot can see
 async def on_message(message):
     # Ignore messages sent by the bot itself
     if message.author == bot.user:
@@ -148,7 +154,7 @@ async def on_message(message):
     channel_id = message.channel.id
 
     # Checks if the auto-translator is enabled for a specific channel by
-    # verifying its ID. If not it stops
+    # verifying its ID. If not, it stops
     if channel_id not in channel_languages or not channel_languages[channel_id]:
         return
 
@@ -179,7 +185,7 @@ async def on_message(message):
 
             # It goes through all target languages configured for the channel.
             # If a target language matches the sender's current language,
-            # it skips it to avoid translating text into the language it was
+            # it avoids translating the text into the language it was
             # already typed in.
             for target_lang in channel_languages[channel_id]:
                 if target_lang == current_lang:
@@ -188,7 +194,7 @@ async def on_message(message):
                 # Prepare data for Libretranslate API
                 payload = {
                     "q": message.content, # Extracts the text sent by the user in Discord
-                    "source": current_lang, # Targets the the inputed message
+                    "source": current_lang, # Targets the inputed message
                     "target": target_lang, # Targets the targeted language placed in the channel
                     "format": "text" # Formatted in text
                 }
@@ -220,7 +226,7 @@ async def createroom(ctx, room_name: str, lang1: str, lang2: str):
     # Stores the Discord server where the command was called
     guild = ctx.guild
     
-    # Converts both language code to lowercase to ensure consistency
+    # Converts both language "code" to lowercase to ensure consistency
     l1 = lang1.lower()
     l2 = lang2.lower()
 
@@ -250,19 +256,15 @@ async def createroom(ctx, room_name: str, lang1: str, lang2: str):
         await new_channel.send(
             f"**Welcome to the Translator Room!**\n"
             f"Messages in `{l1.upper()}` will translate to `{l2.upper()}`, and vice versa.\n"
-            f"*Note: Slowmode is set to 5s. Unrecognized languages will be ignored.*\n"
-            f"**Use **!deleteroom**, after finishing using the room created**"
+            f"*Slowmode is set to 5s. Unrecognized languages will be ignored.*\n"
+            f"**Use **!deleteroom** after finishing the room created**"
         )
-
-    # Catches where the bot lacks "Manage Channels" 
-    except discord.Forbidden:
-        await ctx.send("I don't have the **Manage Channels** permission to create a new room.")
 
     # Catches and reports errors when creating a new channel
     except Exception as e:
         await ctx.send(f"Failed to create the room: {e}")
 
-# Deletes channels
+# Delete channels
 @bot.command()
 async def deleteroom(ctx):
 
@@ -270,11 +272,11 @@ async def deleteroom(ctx):
         safe_channels = (1551621278455304295, 1552457000288260237, 1552801125260857374)
 
         # Checks if the command was triggered inside one of the listed safe channels.
-        # If so, it blocks exectution
+        # If it was, it blocks exectution
         if ctx.channel.id in safe_channels:
             await ctx.send(f"Cannot delete selected channel:{ctx.channel.mention}")
         else:
             # If the channel is not protected, it permanetly deletes the text channel
             await ctx.channel.delete() 
 
-bot.run('Enter API Token')
+bot.run('Insert Token')
